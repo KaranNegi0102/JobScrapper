@@ -20,30 +20,19 @@ export default function Home() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const code = url.searchParams.get('code');
-
-    const getTokenFromCode = async (code: string) => {
-      try {
-        const res = await axios.get(`${BACKEND_URL}/auth/callback?code=${code}`);
-        const accessToken = res.data.access_token;
-        console.log("accesstoken --> ", accessToken)
-        localStorage.setItem('gmail_access_token', accessToken);
-        setToken(accessToken);
-
-        // Remove ?code= from the URL
-        window.history.replaceState({}, document.title, '/');
-      } catch (err) {
-        setError('Failed to get access token from code');
-        console.error(err);
-      }
-    };
-
+    const tokenFromQuery = url.searchParams.get('token'); // ✅ add this
+  
     const storedToken = localStorage.getItem('gmail_access_token');
-    console.log("storedToken is ->", storedToken)
     if (storedToken) {
       setToken(storedToken);
-    } else if (code) {
-      getTokenFromCode(code);
+    } else if (tokenFromQuery) {
+      localStorage.setItem('gmail_access_token', tokenFromQuery);
+      setToken(tokenFromQuery);
+      window.history.replaceState({}, document.title, '/'); // remove ?token=
     }
+    //  else if (code) {
+    //   getTokenFromCode(code); // only if you're still doing code exchange on frontend
+    // }
   }, []);
 
   // STEP 2: Fetch job emails using the token
@@ -53,8 +42,9 @@ export default function Home() {
 
       setLoading(true);
       try {
-        console.log("access token is ", token)
+        // console.log("access token is ", token)
         const res = await axios.get(`${BACKEND_URL}/emails?access_token=${token}`);
+        console.log(res)
         setEmails(res.data);
       } catch (err) {
         setError('Failed to fetch job emails');
@@ -68,6 +58,7 @@ export default function Home() {
   }, [token]);
 
   const handleLogin = () => {
+    console.log("finest step 1")
     window.location.href = `${BACKEND_URL}/auth/login`;
   };
 
@@ -78,8 +69,8 @@ export default function Home() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">📧 Gmail Job Email Scraper</h1>
+    <div className="p-6 w-full h-full bg-white mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-black">📧 Gmail Job Email Scraper</h1>
 
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
@@ -110,7 +101,7 @@ export default function Home() {
                   key={email.id}
                   className="border rounded p-4 shadow-sm"
                 >
-                  <h2 className="font-semibold text-lg">{email.subject}</h2>
+                  <h2 className="font-semibold text-black text-lg">{email.subject}</h2>
                   <p className="text-sm text-gray-600">{email.snippet}</p>
                 </div>
               ))}

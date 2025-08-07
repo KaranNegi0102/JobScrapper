@@ -42,7 +42,7 @@ async def fetch_job_related_emails(access_token: str):
         message_list = await client.get(
             base_url,
             headers=headers,
-            params={"labelIds": "INBOX", "maxResults": 10}
+            params={"labelIds": "INBOX", "maxResults": 50}
         )
         messages = message_list.json().get("messages", [])
         # print(f"number of messages are = {messages}")
