@@ -74,7 +74,8 @@ async def fetch_job_related_emails(access_token: str):
                     "id": msg["id"],
                     "subject": subject,
                     "sender": sender,
-                    "snippet": snippet
+                    "snippet": snippet,
+                     "link": f"https://mail.google.com/mail/u/0/#inbox/{msg['id']}"
                 })
 
     return job_emails

@@ -7,6 +7,7 @@ interface Email {
   subject: string;
   snippet: string;
   sender: string;
+  link: string;
 }
 
 export default function Home() {
@@ -17,6 +18,9 @@ export default function Home() {
   const [filterText, setFilterText] = useState<string>("");
 
   const BACKEND_URL = "http://localhost:8000";
+
+  // Get unique sender names from emails for filter buttons
+  const uniqueSenders = [...new Set(emails.map((email) => email.sender))];
 
   // STEP 1: Check URL for ?code=... and exchange for token
   useEffect(() => {
@@ -73,10 +77,13 @@ export default function Home() {
     setFilterText("");
   };
 
-  // Filter emails based on subject
-  const filteredEmails = emails.filter((email) =>
-    email.sender.toLowerCase().includes(filterText.toLowerCase())
-  );
+  // Filter emails based on sender
+  const filteredEmails = emails.filter((email) => {
+    if (filterText === "" || filterText === "All") {
+      return true;
+    }
+    return email.sender === filterText;
+  });
 
   return (
     <div className="p-6 w-full h-full bg-white mx-auto">
@@ -102,36 +109,68 @@ export default function Home() {
             Logout
           </button>
 
-          {/* Filter Input */}
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Filter by subject..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {loading ? (
-            <p>Loading your job emails...</p>
-          ) : filteredEmails.length === 0 ? (
-            <p>No emails match your filter criteria.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEmails.map((email) => (
-                <div key={email.id} className="border rounded p-4 shadow-sm">
-                  <h2 className="font-semibold text-black text-lg">
-                    {email.sender}
-                  </h2>
-                  <h2 className="font-semibold text-black text-lg">
-                    {email.subject}
-                  </h2>
-                  <p className="text-sm text-gray-600">{email.snippet}</p>
-                </div>
-              ))}
+          <div className="flex gap-6">
+            {/* Left Sidebar - Filter Buttons */}
+            <div className="w-64 flex-shrink-0">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                Filter by sender:
+              </h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setFilterText("")}
+                  className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterText === ""
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  All
+                </button>
+                {uniqueSenders.map((sender) => (
+                  <button
+                    key={sender}
+                    onClick={() => setFilterText(sender)}
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      filterText === sender
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {sender}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+
+            {/* Right Side - Emails */}
+            <div className="flex-1">
+              {loading ? (
+                <p>Loading your job emails...</p>
+              ) : filteredEmails.length === 0 ? (
+                <p>No emails match your filter criteria.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredEmails.map((email) => (
+                    <div
+                      key={email.id}
+                      className="border rounded p-4 shadow-sm"
+                    >
+                      <h2 className="font-semibold text-black text-lg">
+                        {email.sender}
+                      </h2>
+                      <h2 className="font-semibold text-black text-lg">
+                        {email.subject}
+                      </h2>
+                      <p className="text-sm text-gray-600">{email.snippet}</p>
+                      <a href={email.link} target="_blank" rel="noopener noreferrer">
+                        View Email
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </>
       )}
     </div>
