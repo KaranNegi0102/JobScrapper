@@ -2,6 +2,7 @@ import os
 from urllib.parse import urlencode
 import httpx
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -55,14 +56,24 @@ async def fetch_job_related_emails(access_token: str):
             subject = ""
 
             for header in data.get("payload", {}).get("headers", []):
-                if header["name"].lower() == "subject":
+                name=header["name"].lower()
+                if name == "subject":
                     subject = header["value"]
-                    break
+                elif name == "from":
+                    full_sender = header["value"]
+                    match = re.match(r"(.*?)(?:\s*<.*?>)?$", full_sender)
+                    sender = match.group(1).strip() if match else full_sender
 
-            if any(word in subject.lower() for word in ["job", "interview", "position", "hiring", "resume"]):
+
+            # Add your filter conditions here
+            if any(word in subject.lower() for word in ["job", "interview", "position", "hiring", "resume"]) \
+               or any(company in sender.lower() for company in [
+                   "naukri", "internshala", "linkedin", "job hai", "career", "indeed", "vijay"
+               ]):
                 job_emails.append({
                     "id": msg["id"],
                     "subject": subject,
+                    "sender": sender,
                     "snippet": snippet
                 })
 
