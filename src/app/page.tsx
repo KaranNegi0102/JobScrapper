@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Navbar from "../component/navbar";
 
 interface Email {
   id: string;
@@ -86,93 +87,97 @@ export default function Home() {
   });
 
   return (
-    <div className="p-6 w-full h-full bg-white mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-black">
-        📧 Gmail Job Email Scraper
-      </h1>
+    <div className="w-full h-full bg-white">
+      <Navbar
+        title="📧 Gmail Job Email Scraper"
+        onLogout={handleLogout}
+        showLogout={!!token}
+      />
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      <div className="p-6 mx-auto">
+        {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      {!token ? (
-        <button
-          onClick={handleLogin}
-          className="bg-blue-600 text-white px-6 py-2 rounded"
-        >
-          Login with Gmail
-        </button>
-      ) : (
-        <>
+        {!token ? (
           <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded mb-6"
+            onClick={handleLogin}
+            className="bg-blue-600 text-white px-6 py-2 rounded"
           >
-            Logout
+            Login with Gmail
           </button>
-
-          <div className="flex gap-6">
-            {/* Left Sidebar - Filter Buttons */}
-            <div className="w-64 flex-shrink-0">
-              <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                Filter by sender:
-              </h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setFilterText("")}
-                  className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    filterText === ""
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  All
-                </button>
-                {uniqueSenders.map((sender) => (
+        ) : (
+          <>
+            <div className="flex gap-6">
+              {/* Left Sidebar - Filter Buttons */}
+              <div className="w-64 flex-shrink-0">
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                  Filter by sender:
+                </h3>
+                <div className="space-y-2">
                   <button
-                    key={sender}
-                    onClick={() => setFilterText(sender)}
+                    onClick={() => setFilterText("")}
                     className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterText === sender
+                      filterText === ""
                         ? "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                   >
-                    {sender}
+                    All
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Side - Emails */}
-            <div className="flex-1">
-              {loading ? (
-                <p>Loading your job emails...</p>
-              ) : filteredEmails.length === 0 ? (
-                <p>No emails match your filter criteria.</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredEmails.map((email) => (
-                    <div
-                      key={email.id}
-                      className="border rounded p-4 shadow-sm"
+                  {uniqueSenders.map((sender) => (
+                    <button
+                      key={sender}
+                      onClick={() => setFilterText(sender)}
+                      className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        filterText === sender
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
                     >
-                      <h2 className="font-semibold text-black text-lg">
-                        {email.sender}
-                      </h2>
-                      <h2 className="font-semibold text-black text-lg">
-                        {email.subject}
-                      </h2>
-                      <p className="text-sm text-gray-600">{email.snippet}</p>
-                      <a href={email.link} target="_blank" rel="noopener noreferrer">
-                        View Email
-                      </a>
-                    </div>
+                      {sender}
+                    </button>
                   ))}
                 </div>
-              )}
+              </div>
+
+              {/* Right Side - Emails */}
+              <div className="flex-1">
+                {loading ? (
+                  <p>Loading your job emails...</p>
+                ) : filteredEmails.length === 0 ? (
+                  <p>No emails match your filter criteria.</p>
+                ) : (
+                  <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                    {filteredEmails.map((email) => (
+                      <div
+                        key={email.id}
+                        className="group border h-[255px] bg-blue-800 relative rounded-md p-4 shadow-sm overflow-hidden"
+                      >
+                        <h2 className="font-bold underline mb-5 text-center text-white text-lg">
+                          {email.sender}
+                        </h2>
+                        <div className="  ">
+                          <h2 className="font-semibold  text-gray-300 text-lg">
+                            {email.subject}
+                          </h2>
+                          <p className="text-sm text-gray-200 mb-4 ">{email.snippet}</p>
+                        </div>
+                        <a
+                          href={email.link}
+                          className="mt-2 p-1 text-gray-800 font-bold absolute bottom-[-40px] left-0 w-full  text-center bg-blue-200 transition-all duration-500 ease-out group-hover:bottom-0"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View Email 🔍
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
