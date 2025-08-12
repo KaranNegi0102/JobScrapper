@@ -18,16 +18,20 @@ def root():
     return {"message": "Welcome to Gmail Job Scraper"}
 
 @app.get("/auth/login")
-def login():
-    return RedirectResponse(get_google_auth_url())
+def login(redirect_uri: str = Query(default="http://localhost:3000")):
+    return RedirectResponse(get_google_auth_url(redirect_uri))
 
 @app.get("/auth/callback")
-async def auth_callback(code: str):
+async def auth_callback(code: str, state: str = Query(None)):
     token_data = await exchange_code_for_token(code)
     access_token = token_data.get("access_token")
 
-    # Pass token to frontend using query param (optional)
-    redirect_url = f"http://localhost:3000/?token={access_token}"
+    # Use the state parameter to get the original redirect URI
+    # If no state provided, default to dashboard
+    redirect_uri = state if state else "http://localhost:3000/mainDashboard"
+    
+    # Pass token to frontend using query param
+    redirect_url = f"{redirect_uri}?token={access_token}"
     return RedirectResponse(url=redirect_url)
 
 @app.get("/emails")

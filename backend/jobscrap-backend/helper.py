@@ -10,14 +10,18 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 
-def get_google_auth_url():
+def get_google_auth_url(redirect_uri: str = None):
+    # Use the provided redirect_uri or fall back to the default
+    final_redirect_uri = redirect_uri or REDIRECT_URI
+    
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "response_type": "code",
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": REDIRECT_URI,  # Keep this as the OAuth callback URL
         "scope": "https://www.googleapis.com/auth/gmail.readonly",
         "access_type": "offline",
-        "prompt": "consent"
+        "prompt": "consent",
+        "state": final_redirect_uri  # Pass the desired redirect URI as state
     }
     return f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
 

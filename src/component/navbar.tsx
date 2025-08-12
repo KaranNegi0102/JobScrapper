@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 interface NavbarProps {
   title: string;
@@ -12,25 +13,47 @@ export default function Navbar({
   showLogout = false,
 }: NavbarProps) {
   return (
-    <nav className="bg-white shadow-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-blue-900 shadow-md border-b border-gray-200">
+      <div className="max-w-7xl text-white mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Title */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+            <Link
+              href="/"
+              className="text-white hover:text-blue-200 transition-colors duration-200"
+            >
+              <Link href="/?skipRedirect=true" className="text-md font-sm ml-4">Home</Link>
+            </Link>
+            <Link
+              href="/"
+              className="text-white hover:text-blue-200 transition-colors duration-200"
+            >
+              <h1 className="text-md font-sm ml-4">Contact</h1>
+            </Link>
+            <Link
+              href="/"
+              className="text-white hover:text-blue-200 transition-colors duration-200"
+            >
+              <h1 className="text-md font-sm ml-4">About Us</h1>
+            </Link>
           </div>
 
-          {/* Logout Button */}
-          {showLogout && onLogout && (
-            <div className="flex items-center">
+          {/* Title */}
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold">{title}</h1>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-4">
+            {/* Logout Button */}
+            {showLogout && onLogout && (
               <button
                 onClick={onLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
               >
                 Logout
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </nav>
