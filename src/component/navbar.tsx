@@ -16,29 +16,29 @@ export default function Navbar({
     <nav className="bg-blue-900 shadow-md border-b border-gray-200">
       <div className="max-w-7xl text-white mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex gap-4 items-center">
             <Link
-              href="/"
-              className="text-white hover:text-blue-200 transition-colors duration-200"
+              href="/?skipRedirect=true"
+              className="text-white hover:text-blue-200 transition-colors duration-200 text-md font-sm "
             >
-              <Link href="/?skipRedirect=true" className="text-md font-sm ml-4">Home</Link>
+              Home
             </Link>
             <Link
               href="/"
-              className="text-white hover:text-blue-200 transition-colors duration-200"
+              className="text-white hover:text-blue-200 transition-colors duration-200 text-md font-sm "
             >
-              <h1 className="text-md font-sm ml-4">Contact</h1>
+              Contact
             </Link>
             <Link
               href="/"
-              className="text-white hover:text-blue-200 transition-colors duration-200"
+              className="text-white hover:text-blue-200 transition-colors duration-200 text-md font-sm "
             >
-              <h1 className="text-md font-sm ml-4">About Us</h1>
+              About Us
             </Link>
           </div>
 
           {/* Title */}
-          <div className="flex items-center">
+          <div className="ml-[-15%] flex items-center">
             <h1 className="text-2xl font-bold">{title}</h1>
           </div>
 
