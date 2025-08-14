@@ -3,6 +3,8 @@ from urllib.parse import urlencode
 import httpx
 from dotenv import load_dotenv
 import re
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 load_dotenv()
 
@@ -13,12 +15,17 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 def get_google_auth_url(redirect_uri: str = None):
     # Use the provided redirect_uri or fall back to the default
     final_redirect_uri = redirect_uri or REDIRECT_URI
+
+    SCOPES=[
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/calendar"
+        ]
     
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "response_type": "code",
         "redirect_uri": REDIRECT_URI,  # Keep this as the OAuth callback URL
-        "scope": "https://www.googleapis.com/auth/gmail.readonly",
+        "scope": " ".join(SCOPES), #now both gmail and calender wala access kr payenge
         "access_type": "offline",
         "prompt": "consent",
         "state": final_redirect_uri  # Pass the desired redirect URI as state
@@ -83,3 +90,23 @@ async def fetch_job_related_emails(access_token: str):
                 })
 
     return job_emails
+
+def create_calendar_reminder(access_token,title,date,description=""):
+    creds=Credentials(token=access_token)
+    service=build("calendar","v3",credentials=creds)
+
+    # All-day event → end date must be +1 day
+    from datetime import datetime, timedelta
+    event_date = datetime.strptime(date, "%Y-%m-%d")
+    end_date = (event_date + timedelta(days=1)).strftime("%Y-%m-%d")
+
+
+    event={
+        'summary':title,
+        'description':description,
+        'start': {'date': date},
+        'end': {'date': end_date}
+    }
+    
+    created_event= service.events().insert(calendarId="primary",body=event).execute()
+    return {"eventLink":created_event.get('htmlLink')}

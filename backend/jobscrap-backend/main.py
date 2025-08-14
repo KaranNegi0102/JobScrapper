@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import RedirectResponse
 from helper import get_google_auth_url, exchange_code_for_token, fetch_job_related_emails
 from fastapi.middleware.cors import CORSMiddleware
+from helper import create_calendar_reminder
 
 app = FastAPI()
 
@@ -39,6 +40,19 @@ async def get_emails(access_token: str = Query(...)):
     emails = await fetch_job_related_emails(access_token)
     # print(f"emails are {emails}")
     return emails
+
+@app.post("/schedule-reminder")
+def schedule_reminder(
+    access_token: str = Query(...),
+    title: str = Query(...),
+    setDate: str = Query(...),  # format: YYYY-MM-DD
+    description: str = Query(...)):
+
+    print("these are my informations")
+    print(title, setDate, description)
+    result = create_calendar_reminder(access_token, title, setDate, description)
+    return result
+
 
 
 if __name__ == "__main__":
