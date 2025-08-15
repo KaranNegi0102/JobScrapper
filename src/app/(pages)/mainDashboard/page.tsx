@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Navbar from "../../../component/navbar";
+import ScheduleModal from "../../../component/scheduleModal";
+import { Users, Briefcase, CalendarPlus, ExternalLink,Funnel } from "lucide-react";
 
 interface Email {
   id: string;
@@ -17,16 +19,25 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
   const BACKEND_URL = "http://localhost:8000";
 
   // Get unique sender names from emails for filter buttons
   const uniqueSenders = [...new Set(emails.map((email) => email.sender))];
 
+  const senderCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const email of emails) {
+      counts[email.sender] = (counts[email.sender] ?? 0) + 1;
+    }
+    return counts;
+  }, [emails]);
+
   // STEP 1: Check URL for ?code=... and exchange for token
   useEffect(() => {
     const url = new URL(window.location.href);
-    const code = url.searchParams.get("code");
     const tokenFromQuery = url.searchParams.get("token"); // ✅ add this
 
     const storedToken = localStorage.getItem("gmail_access_token");
@@ -84,7 +95,15 @@ export default function Dashboard() {
     window.location.href = "/";
   };
 
-  // Filter emails based on sender
+  const handleCardClick = (email: Email) => {
+    setSelectedEmail(email);
+    setIsModalOpen(true);
+  };
+
+  const handleScheduleSuccess = (eventLink: string) => {
+    alert(`Reminder Scheduled !! View it here : ${eventLink}`);
+  };
+
   const filteredEmails = emails.filter((email) => {
     if (filterText === "" || filterText === "All") {
       return true;
@@ -93,9 +112,9 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="w-full h-full bg-white">
+    <div className="w-full h-full bg-blue-100">
       <Navbar
-        title="📧 JobMails"
+        title="JobMails"
         onLogout={handleLogout}
         showLogout={!!token}
       />
@@ -104,41 +123,47 @@ export default function Dashboard() {
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
         {!token ? (
-          <h1
-            className="bg-blue-600 text-white px-6 py-2 rounded"
-          >
-            No Token
-          </h1>
+          <h1 className="bg-blue-600 text-white px-6 py-2 rounded">No Token</h1>
         ) : (
           <>
-            <div className="flex gap-6">
+            <div className="flex gap-6 ">
               {/* Left Sidebar - Filter Buttons */}
-              <div className="w-64 flex-shrink-0">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
-                  Filter by sender:
+              <div className="w-2/7 h-full shadow-xl rounded-xl bg-white p-6  flex-shrink-0">
+                <h3 className="text-lg font-semibold gap-3 flex flex-row text-gray-700 mb-3">
+                  <Funnel className="w-8 h-8 bg-gray-900 text-white rounded-full p-1"/>
+                  Filter by sender
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-2 ">
                   <button
                     onClick={() => setFilterText("")}
-                    className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-full text-left rounded-lg flex flex-row hover:cursor-pointer gap-3 text-sm font-medium p-3 transition-colors transition-transform duration-100 transform hover:scale-95 ${
                       filterText === ""
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                     }`}
                   >
-                    All
+                    <Users
+                      className={`w-5 h-5 
+                        ${filterText === "" ? "text-white" : "text-gray-700"}`}
+                    />
+                    All Senders ({emails.length})
                   </button>
                   {uniqueSenders.map((sender) => (
                     <button
                       key={sender}
                       onClick={() => setFilterText(sender)}
-                      className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`w-full text-left  rounded-lg p-3 flex hover:cursor-pointer flex-row gap-3 text-sm font-medium transition-colors transition-transform duration-100 transform hover:scale-95 ${
                         filterText === sender
-                          ? "bg-blue-600 text-white"
+                          ? "bg-gray-900 text-white"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     >
-                      {sender}
+                      <Briefcase
+                        className={`w-5 h-5 ${
+                          filterText === sender ? "text-white" : "text-gray-700"
+                        }`}
+                      />
+                      {sender} ({senderCounts[sender] ?? 0})
                     </button>
                   ))}
                 </div>
@@ -147,7 +172,7 @@ export default function Dashboard() {
               {/* Right Side - Emails */}
               <div className="flex-1">
                 {loading ? (
-                  <p>Loading your job emails...</p>
+                  <p className="text-black">Loading your job emails...</p>
                 ) : filteredEmails.length === 0 ? (
                   <p>No emails match your filter criteria.</p>
                 ) : (
@@ -155,27 +180,45 @@ export default function Dashboard() {
                     {filteredEmails.map((email) => (
                       <div
                         key={email.id}
-                        className="group border h-[255px] bg-blue-800 relative rounded-md p-4 shadow-sm overflow-hidden"
+                        className="group border bg-white shadow-full h-full border-l-4 border-red-400  relative rounded-xl p-8 shadow-sm overflow-hidden flex flex-col"
                       >
-                        <h2 className="font-bold underline mb-5 text-center text-white text-lg">
+                        <h2 className="font-bold font-mono mb-6 text-gray-900 text-xl">
                           {email.sender}
                         </h2>
-                        <div className="  ">
-                          <h2 className="font-semibold  text-gray-300 text-lg">
+
+                        <div className="flex-1 flex flex-col">
+                          <h2 className="font-mono text-gray-900 text-lg mb-7 ">
                             {email.subject}
                           </h2>
-                          <p className="text-sm text-gray-200 mb-4 ">
+                          <p className="text-xs  font-mono text-gray-600 mb-7 flex-1">
                             {email.snippet}
                           </p>
+
+                          <div className="mt-auto font-mono flex  flex-row gap-4 space-y-2">
+                            <button
+                              onClick={() => handleCardClick(email)}
+                              className="w-full h-full p-4  flex flex-row font-bold text-center hover:cursor-pointer hover:text-white bg-[#c8e19d] text-gray-800 hover:bg-gray-900  transition-transform duration-100 transform hover:scale-95 rounded-xl"
+                            >
+                              <CalendarPlus className="w-1/2 h-1/2 mt-2" />
+                              Add To Calendar
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                const newWindow = window.open(
+                                  email.link,
+                                  "_blank",
+                                  "noopener,noreferrer"
+                                );
+                                if (newWindow) newWindow.opener = null;
+                              }}
+                              className="w-full p-4 text-gray-800 font-bold flex flex-row text-center hover:cursor-pointer bg-[#f0dddd] hover:text-white hover:bg-blue-900 transition-transform duration-100 transform hover:scale-95 rounded-xl"
+                            >
+                              <ExternalLink className="w-1/2 h-1/2 mt-2" /> View
+                              Email
+                            </button>
+                          </div>
                         </div>
-                        <a
-                          href={email.link}
-                          className="mt-2 p-1 text-gray-800 font-bold absolute bottom-[-40px] left-0 w-full  text-center bg-blue-200 transition-all duration-500 ease-out group-hover:bottom-0"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Email 🔍
-                        </a>
                       </div>
                     ))}
                   </div>
@@ -185,6 +228,17 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      <ScheduleModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedEmail(null);
+        }}
+        email={selectedEmail}
+        token={token}
+        onScheduleSuccess={handleScheduleSuccess}
+      />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import {Send} from "lucide-react";
+
 
 interface NavbarProps {
   title: string;
@@ -13,7 +15,7 @@ export default function Navbar({
   showLogout = false,
 }: NavbarProps) {
   return (
-    <nav className="bg-blue-900 shadow-md border-b border-gray-200">
+    <nav className="bg-gray-900 shadow-md border-b border-gray-200">
       <div className="max-w-7xl text-white mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex gap-4 items-center">
@@ -38,8 +40,9 @@ export default function Navbar({
           </div>
 
           {/* Title */}
-          <div className="ml-[-15%] flex items-center">
-            <h1 className="text-2xl font-bold">{title}</h1>
+          <div className="ml-[-15%]  items-center">
+            <h1 className="text-2xl flex flex-row font-bold">
+              <Send/>{title}</h1>
           </div>
 
           {/* Navigation Links */}
