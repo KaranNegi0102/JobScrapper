@@ -1,10 +1,45 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import Link from "next/link";
 import Navbar from "../component/navbar";
+import gsap from "gsap";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const textRef=useRef<HTMLParagraphElement>(null);
+  const divRef = useRef(null)
+  const tl = useRef<GSAPTimeline>(null)
+
+
+  useEffect(()=>{
+    if(textRef.current){
+      const element  = textRef.current;
+      const fullText = element.innerText;
+      element.innerText="";
+
+      const chars = fullText.split("");
+      element.innerHTML = chars.map(c=> `<span class="opacity-0">${c}</span>`).join("");
+
+      const spans = element.querySelectorAll("span");
+
+      gsap.to(spans, {
+        opacity: 1,
+        duration: 0.05,  
+        stagger: 0.05,  
+        ease: "power1.inOut"
+      });
+      
+    }
+
+    
+
+
+    tl.current = gsap.timeline({paused:true})
+    .from(divRef.current,{scale:5,opacity:0,duration:1})
+
+    tl.current.play();
+
+  },[])
 
   useEffect(() => {
     const token = localStorage.getItem("gmail_access_token");
@@ -28,7 +63,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <Navbar title="📧 JobMails" showLogout={false} />
+      <Navbar title="JobMails" showLogout={false} />
       
       {/* Hero Section */}
       <div className="container mx-auto px-6 py-20">
@@ -39,7 +74,7 @@ export default function Home() {
               ✨ Smart Email Management for Job Seekers
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight tracking-tight">
+            <h1 className="relative text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight tracking-tight">
               Transform your{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
                 Job Search
@@ -52,12 +87,12 @@ export default function Home() {
           </div>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p ref={textRef} className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
             Streamline your job applications, track responses, and never miss an opportunity with our intelligent email organization system.
           </p>
 
           {/* CTA Button */}
-          <div className="mb-16">
+          <div ref={divRef} className="mb-16">
             {isAuthenticated ? (
               <Link
                 href="/mainDashboard"
